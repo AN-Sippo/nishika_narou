@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import re
 
 from utils.make_days import make_days
+from utils.encode_writer import encode_writer
 
 class numerfical_dataset():
     """
@@ -14,9 +15,10 @@ class numerfical_dataset():
     def __init__(self,df:pd.DataFrame):
         self.data = df 
         self.data = make_days(self.data,"general_firstup")
+        self.data = encode_writer(self.data)
 
         # カラム名の整理
-        self.train_columns_re = re.compile(r"(days|biggenre|genre|novel_type|end|isstop|isr15|isbl|isgl|istenni|istensei|iszankoku|pc_or_k|title_.+|story_.+)")
+        self.train_columns_re = re.compile(r"(writer_n|days|biggenre|genre|novel_type|end|isstop|isr15|isbl|isgl|istenni|istensei|iszankoku|pc_or_k|title_.+|story_.+)")
         # self.train_columns_re = re.compile(r"fav_novel_cnt_bin")
         self.train_columns = ["days","biggenre","genre","novel_type","end","isstop","isr15","isbl","isgl","iszankoku","istensei","istenni","pc_or_k"]
         self.target_column = "fav_novel_cnt_bin"
