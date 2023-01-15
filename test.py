@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 import numpy as np 
 from collections import OrderedDict
+import japanize_matplotlib
 
 # 自作部分
 from  dataset_for_lightgbm import numerfical_dataset
@@ -12,7 +13,8 @@ from utils.loss_funcs import accuracy
 # -----herper parameters-----------
 mode = "train"
 n_estimators_l = [1000]
-lr_l = [0.001,0.003,0.01,0.03,0.1,0.3]
+lr_l = [0.03]
+# lr_l = [0.001,0.003,0.01,0.03,0.1,0.3]
 random_state = 34
 # ---------------------------------
 
@@ -22,7 +24,8 @@ def train_loop(n_estimators:int,lr:int,X_train,y_train,eval_sets,callbacks:list=
     この中身のOrderedDictをそのまま返す。({"multi_logloss":list,"accuracy":list})
     """
     model = lgb.LGBMClassifier(n_estimators=n_estimators,boosting_type="goss",learning_rate=lr,random_state=random_state)
-    model.fit(X_train,y_train,eval_set=eval_sets,callbacks=callbacks,eval_metric=accuracy)
+    model.fit(X_train,y_train,eval_set=eval_sets,callbacks=callbacks,eval_metric=accuracy,feature_name=feature_name.tolist())
+    lgb.plot_importance(model,figsize=(12,8),importance_type="gain",max_num_features=20)
     return model.evals_result_["valid_0"]
 
 df = pd.read_csv("datas/with_keyword_train.csv")
@@ -45,6 +48,7 @@ for name in _categorical_l:
     if name in X_train.columns:
         categorical_l.append(X_train.columns.get_loc(name))
 
+feature_name  = X_train.columns
 X_train,y_train = X_train.values,y_train.values
 X_eval,y_eval = X_eval.values,y_eval.values
 

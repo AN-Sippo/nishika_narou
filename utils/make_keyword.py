@@ -96,10 +96,10 @@ story_keywords = make_keyword(train_data,"story",cutoff_rank=story_cutoff_rank)
 
 
 # この初期化は遅いらしい。（どうしたらいいのかよくわからん）
-for i in range(title_cutoff_rank):
-    train_data[f"title_{i}"] = 0
-for i in range(story_cutoff_rank):
-    train_data[f"story_{i}"] = 0
+for keyword in title_keywords:
+    train_data[f"title_{keyword}"] = 0
+for keyword in story_keywords:
+    train_data[f"story_{keyword}"] = 0
 
 token_transformer = token_transform()
 for idx in range(len(train_data)):
@@ -107,13 +107,13 @@ for idx in range(len(train_data)):
     tokens = set(token_transformer.transform(tokenizer.tokenize(train_data.at[idx,"title"])))
     for key_idx,key_token in enumerate(title_keywords):
         if key_token in tokens:
-            train_data.at[idx,f"title_{key_idx}"] = 1
+            train_data.at[idx,f"title_{key_token}"] = 1
     
     #story
     tokens = set(token_transformer.transform(tokenizer.tokenize(train_data.at[idx,"story"])))
     for key_idx,key_token in enumerate(story_keywords):
         if key_token in tokens:
-            train_data.at[idx,f"story_{key_idx}"] = 1
+            train_data.at[idx,f"story_{key_token}"] = 1
     
     if idx % 100 == 0:
         print(f"{idx} / {len(train_data)} done!")
