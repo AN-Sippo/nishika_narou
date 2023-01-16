@@ -74,24 +74,25 @@ max_length_l = (pd.read_csv(data_for_max_length_path)[text_columns].applymap(len
 for column_name,quen in zip(text_columns,max_length_l):
     columns_to_quent[column_name] = quen + 2
 
-print(columns_to_quent)
 #-----------------------------------------
-# lr_l = [0.01]
-# batch_size_l = [64]
-# epochs_l = [1]
 
-# fig,ax_l = plt.subplots(len(lr_l),len(batch_size_l))
 
-# model = bert_model_for_classification()
-# for lr_idx,lr in enumerate(lr_l):
-#     for batch_size_idx,batch_size in enumerate(batch_size_l):
-#         for epochs in epochs_l:
-#             loss_x,loss_y = train_loop(model=model,lr=lr,batch_size=batch_size,epochs=epochs)
-#             ax = ax_l[lr_idx][batch_size_idx]
-#             ax.plot(loss_x,loss_y)
-#             ax.set_label(f"lr={lr} batch_size={batch_size}")
-#             ax.set_yticks([0,0.5,1])
-#             ax.legend()
+lr_l = [0.01]
+batch_size_l = [64]
+epochs_l = [1]
+
+fig,ax_l = plt.subplots(len(lr_l),len(batch_size_l))
+
+model = bert_model_for_classification()
+for lr_idx,lr in enumerate(lr_l):
+    for batch_size_idx,batch_size in enumerate(batch_size_l):
+        for epochs in epochs_l:
+            loss_x,loss_y = train_loop(model=model,lr=lr,batch_size=batch_size,epochs=epochs)
+            ax = ax_l[lr_idx][batch_size_idx]
+            ax.plot(loss_x,loss_y)
+            ax.set_label(f"lr={lr} batch_size={batch_size}")
+            ax.set_yticks([0,0.5,1])
+            ax.legend()
 
 
 
