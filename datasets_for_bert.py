@@ -53,9 +53,31 @@ class dataset_for_bert(Dataset):
             res[label]+=1
             res = torch.Tensor(res)
         else:
+            res = torch.Tensor(0)
+
+        
+        #test.csvに対して予測を行うときに、datasetからの返り値をそのままbertに突っ込めたら楽なので。
+        return {"input_ids":input_ids,"attention_mask":attention_mask,"token_type_ids":token_type_ids,"label":res}
+
+    def getitem_without_label(self,idx:int):
+        """
+        test.csvに対して予測を行うときに、datasetからの返り値をそのままbertに突っ込めたら楽なので。
+        使い方は、__getitem__と同じ。
+        ただ、帰ってくるdictにlabelがない。
+        """
+        data = self.train_data
+        input_ids = data["input_ids"][idx]
+        attention_mask = data["attention_mask"][idx]
+        token_type_ids = data["token_type_ids"][idx]
+        if self.is_train:
+            res = [0 for _ in range(self.n_class)]
+            label = int(self.target_data[idx].item())
+            res[label]+=1
+            res = torch.Tensor(res)
+        else:
             label = None 
         
-        return {"input_ids":input_ids,"attention_mask":attention_mask,"token_type_ids":token_type_ids,"label":res}
+        return {"input_ids":input_ids,"attention_mask":attention_mask,"token_type_ids":token_type_ids}
 
 if __name__ == "__main__":
     dataset = dataset_for_bert("datas/train.csv",15,"title")
