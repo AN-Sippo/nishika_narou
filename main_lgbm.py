@@ -11,7 +11,7 @@ from  dataset_for_lightgbm import numerfical_dataset
 from utils.loss_funcs import accuracy
 
 # -----herper parameters-----------
-mode = "train"
+mode = "predict"
 n_estimators_l = [1000]
 lr_l = [0.03]
 # lr_l = [0.001,0.003,0.01,0.03,0.1,0.3]

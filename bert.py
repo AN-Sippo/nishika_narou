@@ -6,7 +6,6 @@ from  transformers.modeling_outputs import BaseModelOutputWithPoolingAndCrossAtt
 from torch.utils.data import DataLoader
 import numpy as np 
 from matplotlib import pyplot as plt 
-from copy import deepcopy
 
 #自作部分
 from datasets_for_bert import dataset_for_bert
@@ -21,13 +20,15 @@ class bert_model_for_classification(nn.Module):
         super(bert_model_for_classification,self).__init__()
         
         self.bert_model:nn.Module = BertModel.from_pretrained(model_name)
+        self.batch_norm:nn.Module = nn.BatchNorm1d(768)
         self.dense:nn.Module = nn.Linear(768,5)
         self.n_classes = n_classes
     
     def forward(self,X:torch.Tensor)->torch.Tensor:
          x1:BaseModelOutputWithPoolingAndCrossAttentions = self.bert_model.forward(**X)
          x2:torch.FloatTensor = x1.pooler_output
-         x3 = self.dense(x2)
+         z2 = self.batch_norm(x2)
+         x3 = self.dense(z2)
         #  z3 = nn.Softmax(dim=1)(x3) crossentropylossではやらなくていいらしい
          return x3
 
@@ -79,7 +80,7 @@ for column_name,quen in zip(text_columns_l,max_length_l):
 #-----------------------------------------
 
 if mode == "train":
-    lr_l = [0.01,0.003] #0.003の方が良さそう。0.001も要検討。
+    lr_l = [0.003,0.001] #0.003の方が良さそう。0.001も要検討。
     batch_size_l = [64]
     epochs_l = [1]
 
@@ -107,13 +108,12 @@ if mode == "train":
                     if min_loss > loss_y[-1]:
                         temp_model = model 
                         min_loss = loss_y[-1]
-        fig.show()
-        torch.save(temp_model,f"models/bert{text_column}.pth")
+        torch.save(temp_model,f"models/bert-norm-{text_column}.pth")
 
 if mode == "predict":
     with torch.no_grad():
         bert_output_size:int = 768
-        output_path:str = "datas/bert.csv"
+        output_path:str = "datas/norm-bert.csv"
         df = pd.read_csv("datas/test.csv")
 
         # bertカラムの初期化
@@ -127,8 +127,10 @@ if mode == "predict":
         batch_size = 1000
 
         for text_column in text_columns_l:
-            # model:bert_model_for_classification = torch.load(f"models/bert{text_column}.pth")
-            model:bert_model_for_classification = bert_model_for_classification()
+            #多分fine-tuning失敗してて、[CLS]トークンの予測ベクトルが変化しなくなってる
+            #ので、とりあえずpre-trainで遊ぶ
+            model:bert_model_for_classification = torch.load(f"models/bert-norm-{text_column}.pth")
+            # model:bert_model_for_classification = bert_model_for_classification()
             model.eval()
             dataset = dataset_for_bert("datas/test.csv",max_length=columns_to_quent[text_column],column=text_column,n_class=5)
             dataloader = DataLoader(dataset,shuffle=False,batch_size=batch_size)
