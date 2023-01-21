@@ -3,10 +3,14 @@ from torch import nn
 from transformers import BertTokenizer 
 from torch.utils.data import Dataset,DataLoader
 import pandas as pd 
+import re 
 
 
 model_name:str="cl-tohoku/bert-base-japanese"
 tokenizer = BertTokenizer.from_pretrained(model_name)
+
+URL_PATTERN = re.compile(r'http[\w:./\d]+') # URL
+DATE_PATTERN = re.compile(r'\d+/\d+/\d+') # DATE
 
 class dataset_for_bert(Dataset):
     def __init__(self,csv_path:str,max_length:int,column:str,n_class:int=5) -> None:
@@ -14,18 +18,20 @@ class dataset_for_bert(Dataset):
         self.path = csv_path 
         data = pd.read_csv(self.path)
         self.n_class = n_class
+        self.max_length = max_length
 
         #columns
         self.target_column = "fav_novel_cnt_bin"
         self.train_column = column
 
-
         #to use same dataset for train and predict
         self.is_train = (self.target_column in data.columns)
 
-        self.max_length = max_length
+        #regex 
+        data = data[self.train_column].apply(lambda x:URL_PATTERN.sub("[UNK]",x))
+
         #train_data
-        self.train_data = data[self.train_column].tolist()
+        self.train_data = data.tolist()
         self.train_data = tokenizer(self.train_data,truncation=True,padding=True,max_length=self.max_length,return_tensors="pt",return_length=True)
         #padding,truncationがうまく働く自信がないのでエラーハンドリングしておく。
         for input_id in self.train_data["input_ids"]:
